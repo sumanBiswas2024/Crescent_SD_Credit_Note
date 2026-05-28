@@ -66,8 +66,31 @@
                                 </fb:control>
                             </fb:FilterGroupItem>
 
-                            <!-- Sales Org -->
                             <fb:FilterGroupItem
+                                name="companyCode"
+                                label="Company Code"
+                                groupName="Group1"
+                                visibleInFilterBar="true"
+                            >
+                                <fb:control>
+                                    <ComboBox
+                                        id="idCompanyCodeInput"
+                                        selectedKey="{globalData>/companyCode}"
+                                        placeholder="Select Company Code"
+                                        required="true"
+                                        showClearIcon="true"
+                                        items="{parametersData>/value}"
+                                    >
+                                        <core:Item
+                                            key="{parametersData>companyCode}"
+                                            text="{parametersData>companyCode}"
+                                        />
+                                    </ComboBox>
+                                </fb:control>
+                            </fb:FilterGroupItem>
+
+                            <!-- Sales Org -->
+                            <!-- <fb:FilterGroupItem
                                 name="salesOrg"
                                 label="Sales Org"
                                 groupName="Group1"
@@ -87,7 +110,7 @@
                                         />
                                     </ComboBox>
                                 </fb:control>
-                            </fb:FilterGroupItem>
+                            </fb:FilterGroupItem> -->
 
                             <!-- Document Date -->
                             <fb:FilterGroupItem
@@ -114,7 +137,7 @@
                             </fb:FilterGroupItem>
 
                             <!-- Payer -->
-                            <fb:FilterGroupItem
+                            <!-- <fb:FilterGroupItem
                                 name="payer"
                                 label="Payer"
                                 groupName="Group1"
@@ -135,7 +158,7 @@
                                         />
                                     </ComboBox>
                                 </fb:control>
-                            </fb:FilterGroupItem>
+                            </fb:FilterGroupItem> -->
                         </fb:filterGroupItems>
                     </fb:FilterBar>
                 </f:content>

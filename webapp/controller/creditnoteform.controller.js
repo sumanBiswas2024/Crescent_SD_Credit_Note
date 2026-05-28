@@ -8,7 +8,7 @@ sap.ui.define([
     "use strict";
 
     return Controller.extend("com.crescent.app.creditnoteformsd.controller.debitnoteform", {
-        
+
         onInit: function () {
 
             this._busyDialog = new sap.m.BusyDialog();
@@ -23,7 +23,8 @@ sap.ui.define([
         },
         _validateInputs: function () {
             const oDocumentNoInput = this.byId("idDocumentNoInput");   // Document Number
-            const oSalesOrgInput = this.byId("idSalesOrgInput");     // Sales Org
+            // const oSalesOrgInput = this.byId("idSalesOrgInput");     // Sales Org
+            const oCompanyCodeInput = this.byId("idCompanyCodeInput"); // Company Code
             const oDateInput = this.byId("idDocumentDateInput"); // Document Date
             const oPayerInput = this.byId("idPayerInput");        // Payer
 
@@ -37,12 +38,19 @@ sap.ui.define([
                 oDocumentNoInput.setValueState("None");
             }
 
-            // Sales Org
-            if (!oSalesOrgInput.getSelectedKey()) {
-                oSalesOrgInput.setValueState("Error");
+            // // Sales Org
+            // if (!oSalesOrgInput.getSelectedKey()) {
+            //     oSalesOrgInput.setValueState("Error");
+            //     bValid = false;
+            // } else {
+            //     oSalesOrgInput.setValueState("None");
+            // }
+            // Company Code
+            if (!oCompanyCodeInput.getSelectedKey()) {
+                oCompanyCodeInput.setValueState("Error");
                 bValid = false;
             } else {
-                oSalesOrgInput.setValueState("None");
+                oCompanyCodeInput.setValueState("None");
             }
 
             // Document Date
@@ -53,16 +61,19 @@ sap.ui.define([
                 oDateInput.setValueState("None");
             }
 
-            // Payer
-            if (!oPayerInput.getSelectedKey()) {
-                oPayerInput.setValueState("Error");
-                bValid = false;
-            } else {
-                oPayerInput.setValueState("None");
-            }
+            // // Payer
+            // if (!oPayerInput.getSelectedKey()) {
+            //     oPayerInput.setValueState("Error");
+            //     bValid = false;
+            // } else {
+            //     oPayerInput.setValueState("None");
+            // }
 
+            // if (!bValid) {
+            //     MessageBox.show("Please fill in all required fields (Document No, Sales Org, Document Date, Payer).");
+            // }
             if (!bValid) {
-                MessageBox.show("Please fill in all required fields (Document No, Sales Org, Document Date, Payer).");
+                MessageBox.show("Please fill in all required fields (Company Code, Document No, Document Date).");
             }
 
             return bValid;
@@ -116,12 +127,20 @@ sap.ui.define([
                             return resolve();
                         }
 
+                        // // 🔑 Normalize backend keys → camelCase
+                        // const aNormalized = aAllData.map(item => ({
+                        //     documentNo: item.document_no,
+                        //     salesOrg: item.SLS_ORG,
+                        //     documentDate: item.document_date,
+                        //     payer: item.Payer
+                        // }));
+
                         // 🔑 Normalize backend keys → camelCase
                         const aNormalized = aAllData.map(item => ({
                             documentNo: item.document_no,
-                            salesOrg: item.SLS_ORG,
-                            documentDate: item.document_date,
-                            payer: item.Payer
+                            companyCode: item.Company_Code, // Ensure 'CompanyCode' matches the backend property name
+                            documentDate: item.document_date
+                            // payer: item.Payer
                         }));
 
                         // Store full list in parametersData
@@ -160,17 +179,26 @@ sap.ui.define([
             }
 
             const sDocumentNo = oGlobalDataModel.getProperty("/documentNo");
-            const sSalesOrg = oGlobalDataModel.getProperty("/salesOrg");
+            // const sSalesOrg = oGlobalDataModel.getProperty("/salesOrg");
+            const sCompanyCode = oGlobalDataModel.getProperty("/companyCode");
             const sDocDate = oGlobalDataModel.getProperty("/documentDate");
             const sPayer = oGlobalDataModel.getProperty("/payer");
 
-            if (!sDocumentNo || !sSalesOrg || !sDocDate || !sPayer) {
-                MessageBox.error("Please fill all required fields (Document No, Sales Org, Date, Payer).");
+            // if (!sDocumentNo || !sSalesOrg || !sDocDate || !sPayer) {
+            //     MessageBox.error("Please fill all required fields (Document No, Sales Org, Date, Payer).");
+            //     return;
+            // }
+
+            if (!sDocumentNo || !sCompanyCode || !sDocDate) {
+                MessageBox.error("Please fill all required fields ( Company Code, Document No, Date).");
                 return;
             }
 
             const sEntityPath = "/creditnote_sd";
-            const sFilter = `document_no eq '${sDocumentNo}' and SLS_ORG eq '${sSalesOrg}' and document_date eq ${sDocDate} and Payer eq '${sPayer}'`;
+            // const sFilter = `document_no eq '${sDocumentNo}' and SLS_ORG eq '${sSalesOrg}' and document_date eq ${sDocDate} and Payer eq '${sPayer}'`;
+
+            // Ensure sDocDate is exactly in YYYY-MM-DD format before passing it to this string
+            const sFilter = `document_no eq '${sDocumentNo}' and company_code eq '${sCompanyCode}' and document_date eq ${sDocDate}`;
 
             const sUrlParameters = {
                 "$count": "true",
