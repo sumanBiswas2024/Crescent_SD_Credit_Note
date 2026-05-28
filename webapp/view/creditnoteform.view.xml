@@ -56,7 +56,7 @@
                                         placeholder="Select Document No"
                                         required="true"
                                         showClearIcon="true"
-                                        items="{parametersData>/value}"
+                                        items="{parametersData>/documents}"
                                     >
                                         <core:Item
                                             key="{parametersData>documentNo}"
@@ -79,7 +79,7 @@
                                         placeholder="Select Company Code"
                                         required="true"
                                         showClearIcon="true"
-                                        items="{parametersData>/value}"
+                                        items="{parametersData>/companyCodes}"
                                     >
                                         <core:Item
                                             key="{parametersData>companyCode}"
@@ -126,7 +126,7 @@
                                         placeholder="Select Document Date"
                                         required="true"
                                         showClearIcon="true"
-                                        items="{parametersData>/value}"
+                                        items="{parametersData>/dates}"
                                     >
                                         <core:Item
                                             key="{parametersData>documentDate}"

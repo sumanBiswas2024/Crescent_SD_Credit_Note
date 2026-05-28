@@ -53,12 +53,33 @@ sap.ui.define([
                 oCompanyCodeInput.setValueState("None");
             }
 
+            // // Document Date
+            // if (!oDateInput.getValue().trim()) {
+            //     oDateInput.setValueState("Error");
+            //     bValid = false;
+            // } else {
+            //     oDateInput.setValueState("None");
+            // }
+
             // Document Date
-            if (!oDateInput.getValue().trim()) {
+            const sDateValue = oDateInput.getValue().trim();
+            const oDateRegex = /^\d{4}-\d{2}-\d{2}$/; // Matches YYYY-MM-DD exactly
+
+            if (!sDateValue || !oDateRegex.test(sDateValue)) {
                 oDateInput.setValueState("Error");
+                oDateInput.setValueStateText("Format must be YYYY-MM-DD");
                 bValid = false;
             } else {
-                oDateInput.setValueState("None");
+                // Ensure it is an actual real calendar date (prevents 2026-99-99)
+                const dDate = new Date(sDateValue);
+                if (isNaN(dDate.getTime())) {
+                    oDateInput.setValueState("Error");
+                    oDateInput.setValueStateText("Invalid calendar date");
+                    bValid = false;
+                } else {
+                    oDateInput.setValueState("None");
+                    oDateInput.setValueStateText("");
+                }
             }
 
             // // Payer
@@ -135,21 +156,46 @@ sap.ui.define([
                         //     payer: item.Payer
                         // }));
 
-                        // 🔑 Normalize backend keys → camelCase
+                        // // 🔑 Normalize backend keys → camelCase
+                        // const aNormalized = aAllData.map(item => ({
+                        //     documentNo: item.document_no,
+                        //     companyCode: item.Company_Code, // Ensure 'Company_Code' matches the backend property name
+                        //     documentDate: item.document_date
+                        //     // payer: item.Payer
+                        // }));
+
+                        // // Store full list in parametersData
+                        // oParametersDataModel.setData({ value: aNormalized });
+
+                        // // Store first record as selected in globalData
+                        // oGlobalDataModel.setData(aNormalized[0] || {});
+
+                        // console.log("Fetched & normalized data:", aNormalized);
+                        // resolve();
+
+                        // 1. Normalize backend keys
                         const aNormalized = aAllData.map(item => ({
                             documentNo: item.document_no,
-                            companyCode: item.Company_Code, // Ensure 'CompanyCode' matches the backend property name
+                            companyCode: item.Company_Code,
                             documentDate: item.document_date
-                            // payer: item.Payer
                         }));
 
-                        // Store full list in parametersData
-                        oParametersDataModel.setData({ value: aNormalized });
+                        // 2. Extract Unique values for each dropdown to prevent duplicates
+                        const aUniqueDocs = [...new Set(aNormalized.map(item => item.documentNo))].map(val => ({ documentNo: val }));
+                        const aUniqueCompanyCodes = [...new Set(aNormalized.map(item => item.companyCode))].map(val => ({ companyCode: val }));
+                        const aUniqueDates = [...new Set(aNormalized.map(item => item.documentDate))].map(val => ({ documentDate: val }));
+
+                        // 3. Store the unique lists in the model
+                        oParametersDataModel.setData({ 
+                            documents: aUniqueDocs,
+                            companyCodes: aUniqueCompanyCodes,
+                            dates: aUniqueDates
+                        });
 
                         // Store first record as selected in globalData
                         oGlobalDataModel.setData(aNormalized[0] || {});
 
-                        console.log("Fetched & normalized data:", aNormalized);
+                        console.log("Fetched & normalized unique data.");
                         resolve();
                     })
                     .catch(error => {
