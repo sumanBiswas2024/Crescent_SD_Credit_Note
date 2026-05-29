@@ -63,15 +63,16 @@ sap.ui.define([
 
             // Document Date
             const sDateValue = oDateInput.getValue().trim();
-            const oDateRegex = /^\d{4}-\d{2}-\d{2}$/; // Matches YYYY-MM-DD exactly
+            const oDateRegex = /^\d{2}-\d{2}-\d{4}$/; // Matches DD-MM-YYYY exactly
 
             if (!sDateValue || !oDateRegex.test(sDateValue)) {
                 oDateInput.setValueState("Error");
-                oDateInput.setValueStateText("Format must be YYYY-MM-DD");
+                oDateInput.setValueStateText("Format must be DD-MM-YYYY");
                 bValid = false;
             } else {
-                // Ensure it is an actual real calendar date (prevents 2026-99-99)
-                const dDate = new Date(sDateValue);
+                // Convert DD-MM-YYYY to YYYY-MM-DD temporarily just to validate it is a real calendar date
+                const parts = sDateValue.split("-");
+                const dDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`); 
                 if (isNaN(dDate.getTime())) {
                     oDateInput.setValueState("Error");
                     oDateInput.setValueStateText("Invalid calendar date");
@@ -173,12 +174,29 @@ sap.ui.define([
                         // console.log("Fetched & normalized data:", aNormalized);
                         // resolve();
 
-                        // 1. Normalize backend keys
-                        const aNormalized = aAllData.map(item => ({
-                            documentNo: item.document_no,
-                            companyCode: item.Company_Code,
-                            documentDate: item.document_date
-                        }));
+                        // // 1. Normalize backend keys
+                        // const aNormalized = aAllData.map(item => ({
+                        //     documentNo: item.document_no,
+                        //     companyCode: item.Company_Code,
+                        //     documentDate: item.document_date
+                        // }));
+
+                        // 1. Normalize backend keys and format date for UI
+                        const aNormalized = aAllData.map(item => {
+                            let sFormattedDate = item.document_date;
+                            // Convert YYYY-MM-DD to DD-MM-YYYY for display
+                            if (sFormattedDate && sFormattedDate.includes("-")) {
+                                const parts = sFormattedDate.split("-");
+                                if (parts.length === 3 && parts[0].length === 4) {
+                                    sFormattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                                }
+                            }
+                            return {
+                                documentNo: item.document_no,
+                                companyCode: item.Company_Code,
+                                documentDate: sFormattedDate
+                            };
+                        });
 
                         // 2. Extract Unique values for each dropdown to prevent duplicates
                         const aUniqueDocs = [...new Set(aNormalized.map(item => item.documentNo))].map(val => ({ documentNo: val }));
@@ -240,11 +258,15 @@ sap.ui.define([
                 return;
             }
 
+            // Convert UI format (DD-MM-YYYY) back to Backend format (YYYY-MM-DD)
+            const aDateParts = sDocDate.split("-");
+            const sBackendDocDate = `${aDateParts[2]}-${aDateParts[1]}-${aDateParts[0]}`;
+
             const sEntityPath = "/creditnote_sd";
             // const sFilter = `document_no eq '${sDocumentNo}' and SLS_ORG eq '${sSalesOrg}' and document_date eq ${sDocDate} and Payer eq '${sPayer}'`;
 
             // Ensure sDocDate is exactly in YYYY-MM-DD format before passing it to this string
-            const sFilter = `document_no eq '${sDocumentNo}' and company_code eq '${sCompanyCode}' and document_date eq ${sDocDate}`;
+            const sFilter = `document_no eq '${sDocumentNo}' and company_code eq '${sCompanyCode}' and document_date eq ${sBackendDocDate}`;
 
             const sUrlParameters = {
                 "$count": "true",
